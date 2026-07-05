@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Blog</title>
 <link rel="stylesheet" type="text/css" href="styles.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1abc9c">
+<meta name="description" content="A personal blog by Dragomir Danut">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Blog">
+<link rel="apple-touch-icon" href="me.png">
 </head>
 <body>
   <div id="header">
@@ -51,5 +60,51 @@ These I purchase from many producers, distributors, wholesalers for a chain of s
   </div>
 </div>
 
+<div id="install-prompt" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #1abc9c; color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1000; max-width: 300px;">
+  <div style="display: flex; justify-content: space-between; align-items: start; gap: 10px;">
+    <div>
+      <strong>Install App</strong>
+      <p style="margin: 5px 0 0 0; font-size: 14px;">Get quick access to your favorite blog</p>
+    </div>
+    <button id="install-button" style="background: white; color: #1abc9c; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Install</button>
+  </div>
+  <button id="dismiss-prompt" style="background: none; border: none; color: white; cursor: pointer; position: absolute; top: 5px; right: 5px; font-size: 20px; padding: 0;">×</button>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js').catch(err => {
+    console.log('Service Worker registration failed: ', err);
+  });
+}
+
+let deferredPrompt;
+const installPrompt = document.getElementById('install-prompt');
+const installButton = document.getElementById('install-button');
+const dismissButton = document.getElementById('dismiss-prompt');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installPrompt.style.display = 'block';
+});
+
+installButton.addEventListener('click', () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choiceResult => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      }
+      deferredPrompt = null;
+      installPrompt.style.display = 'none';
+    });
+  }
+});
+
+dismissButton.addEventListener('click', () => {
+  installPrompt.style.display = 'none';
+});
+</script>
 </body>
 </html>
